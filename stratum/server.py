@@ -67,8 +67,18 @@ def setup_finalize(event, application):
     reactor.suggestThreadPoolSize(settings.THREAD_POOL_SIZE) 
     
     if settings.LISTEN_SOCKET_TRANSPORT:
-        # Attach Socket Transport service to application
-        socket = internet.TCPServer(settings.LISTEN_SOCKET_TRANSPORT,
+        if settings.LISTEN_SOCKET_ADDRESS:
+            # Attach Socket Transport service to application
+            socket = internet.TCPServer(settings.LISTEN_SOCKET_TRANSPORT,
+                                socket_transport.SocketTransportFactory(debug=settings.DEBUG,
+                                                                        signing_key=signing_key,
+                                                                        signing_id=settings.SIGNING_ID,
+                                                                        event_handler=ServiceEventHandler,
+                                                                        tcp_proxy_protocol_enable=settings.TCP_PROXY_PROTOCOL),
+                                interface=settings.LISTEN_SOCKET_ADDRESS)
+        else:
+             # Attach Socket Transport service to application
+            socket = internet.TCPServer(settings.LISTEN_SOCKET_TRANSPORT,
                                 socket_transport.SocketTransportFactory(debug=settings.DEBUG,
                                                                         signing_key=signing_key,
                                                                         signing_id=settings.SIGNING_ID,
